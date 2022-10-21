@@ -1,0 +1,19 @@
+#board {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 512px;
+    height: 512px;
+    gap: 10px;
+}
+
+.cell {
+    display: flex;
+    flex-grow: 1;
+}
+
+.cellButton {
+    flex-grow: 1;
+    font-size: 96pt;
+    font-weight: bold;
+    color: grey;
+}
