@@ -85,22 +85,34 @@ let gameBoard = (() => {
     function evaluateBoard() {
         const boardW = 3;
 
+        let filledCells = 0;
+
         for (let i = 0; i < board.length; i++) {
             if (board[i] === 0)
                 continue;
-
-            if (testDir(i, 1, 0) >= boardW
+                
+                if (testDir(i, 1, 0) >= boardW
                 || testDir(i, 0, 1) >= boardW
                 || testDir(i, 1, 1) >= boardW
                 || testDir(i, -1, 1) >= boardW
-            ) {
-                let s;
-                if (board[i] === 1) s = 'win';
-                else if (board[i] === 2) s = 'loss';
-                document.querySelector('#status').textContent = `That's a ${s}`;
-                console.log(`That's a ${s}`);
-                gameOver = true;
-            }
+                ) {
+                    let s;
+                    if (board[i] === 1)
+                        s = 'win';
+                    else if (board[i] === 2)
+                        s = 'loss';
+                    document.querySelector('#status').textContent = `That's a ${s}`;
+                    console.log(`That's a ${s}`);
+                    gameOver = true;
+                }
+
+                // check for "draw"
+                filledCells++;
+                if (filledCells >= 9 && !gameOver) {
+                    document.querySelector('#status').textContent = `That's a draw`;
+                    console.log(`That's a draw`);
+                    gameOver = true;
+                }
         }
     }
 
