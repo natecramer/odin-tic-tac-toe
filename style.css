@@ -18,3 +18,15 @@
     font-weight: bold;
     color: grey;
 }
+
+#status {
+    font-size: 100pt;
+}
+
+.o {
+    background-color: green;
+}
+
+.x {
+    background-color: darkred;
+}

@@ -20,10 +20,13 @@ let gameBoard = (() => {
 
         displayController.updateBoard();
 
+        evaluateBoard();
+
         if (playerId === 1) {
             playCpuMove();
         }
 
+        evaluateBoard();
     }
 
     function playCpuMove() {
@@ -39,6 +42,64 @@ let gameBoard = (() => {
         playMove(2, emptyCells[r]);
     }
 
+    // returns number of matching adjacent, in the direction specified
+    function testDir(startIdx, dirX, dirY) {
+        let result = 0;
+        
+        const boardW = 3;
+
+        let colTest = startIdx % boardW;
+        let rowTest = Math.floor(startIdx / boardW);
+
+        const maxNumToTest = 3
+        let newIdx = startIdx;
+
+        while (true) {
+            newIdx = colTest + (rowTest * boardW);
+            
+            if (colTest >= boardW
+                || rowTest >= boardW
+                || newIdx >= board.length
+                || colTest < 0
+                || rowTest < 0
+                || newIdx < 0
+            ) {
+                break;
+            }
+                
+            if (board[newIdx] === board[startIdx]) {
+                result++;
+            } else {
+                break;
+            }
+            colTest += dirX;
+            rowTest += dirY;
+        }
+
+        return result;
+    }
+
+    function evaluateBoard() {
+        const boardW = 3;
+
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === 0)
+                continue;
+
+            if (testDir(i, 1, 0) >= boardW
+                || testDir(i, 0, 1) >= boardW
+                || testDir(i, 1, 1) >= boardW
+                || testDir(i, -1, 1) >= boardW
+            ) {
+                let s;
+                if (board[i] === 1) s = 'win';
+                else if (board[i] === 2) s = 'loss';
+                document.querySelector('#status').textContent = `That's a ${s}`;
+                console.log(`That's a ${s}`);
+            }
+        }
+    }
+
     return {board, playMove};
 })();
 
@@ -48,10 +109,13 @@ const displayController = (() => {
         document.querySelectorAll('.cellButton').forEach( elem => {
             if (gameBoard.board[i] === 0)
                 elem.textContent = '';
-            else if (gameBoard.board[i] === 1)
+            else if (gameBoard.board[i] === 1) {
                 elem.textContent = 'O';
-                else if (gameBoard.board[i] === 2)
+                elem.classList.add('o');
+            } else if (gameBoard.board[i] === 2) {
                 elem.textContent = 'X';
+                elem.classList.add('x');
+            }
             
             i++;
         });
@@ -72,8 +136,6 @@ document.querySelectorAll('.cellButton').forEach( elem => {
         if (elem.id === 'cellButton6') cellid = 6;
         if (elem.id === 'cellButton7') cellid = 7;
         if (elem.id === 'cellButton8') cellid = 8;
-        
-        console.log(`click ${elem.id}`);
 
         if (cellid === -1) 
             return;
