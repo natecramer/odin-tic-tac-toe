@@ -9,6 +9,8 @@ let gameBoard = (() => {
         0,0,0
     ];
 
+    let gameOver = false;
+
     player1 = playerFactory('player1');
     player2 = playerFactory('player2');
 
@@ -18,15 +20,16 @@ let gameBoard = (() => {
         
         board[cell] = playerId;
 
-        displayController.updateBoard();
+        displayController.update();
 
         evaluateBoard();
 
-        if (playerId === 1) {
-            playCpuMove();
+        if (!gameOver) {
+            if (playerId === 1) {
+                playCpuMove();
+            }
+            evaluateBoard();
         }
-
-        evaluateBoard();
     }
 
     function playCpuMove() {
@@ -96,36 +99,54 @@ let gameBoard = (() => {
                 else if (board[i] === 2) s = 'loss';
                 document.querySelector('#status').textContent = `That's a ${s}`;
                 console.log(`That's a ${s}`);
+                gameOver = true;
             }
         }
     }
 
-    return {board, playMove};
+    function reset() {
+        for (let i = 0; i < board.length; i++) {
+            board[i] = 0;
+            gameOver = false;
+            document.querySelector('#status').textContent = `-`;
+        }
+    }
+
+    function getGameOver() { return gameOver};
+
+    return {board, getGameOver, playMove, reset};
 })();
 
 const displayController = (() => {
-    updateBoard = () => {
+    update = () => {
         let i = 0;
         document.querySelectorAll('.cellButton').forEach( elem => {
-            if (gameBoard.board[i] === 0)
+            if (gameBoard.board[i] === 0) {
                 elem.textContent = '';
-            else if (gameBoard.board[i] === 1) {
+                elem.classList.remove('o');
+                elem.classList.remove('x');
+            } else if (gameBoard.board[i] === 1) {
                 elem.textContent = 'O';
                 elem.classList.add('o');
+                elem.classList.remove('x');
             } else if (gameBoard.board[i] === 2) {
                 elem.textContent = 'X';
                 elem.classList.add('x');
+                elem.classList.remove('o');
             }
             
             i++;
         });
     };
 
-    return { updateBoard };
+    return { update };
 })();
 
+// attach event listeners to all buttons
 document.querySelectorAll('.cellButton').forEach( elem => {
     elem.addEventListener('click', event => {
+        if (gameBoard.getGameOver()) return;
+
         let cellid = -1;
         if (elem.id === 'cellButton0') cellid = 0;
         if (elem.id === 'cellButton1') cellid = 1;
@@ -142,4 +163,10 @@ document.querySelectorAll('.cellButton').forEach( elem => {
 
         gameBoard.playMove(1, cellid);
     });
+});
+
+// reset button
+document.querySelector('#resetButton').addEventListener('click', e => {
+    gameBoard.reset();
+    displayController.update();
 });
