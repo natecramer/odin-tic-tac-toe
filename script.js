@@ -26,7 +26,11 @@ let gameBoard = (() => {
 
         if (!gameOver) {
             if (playerId === 1) {
-                playCpuMove();
+                const difficulty = document.getElementById('difficuly-select').value;
+                if (difficulty === 'easy')
+                    playCpuMove();
+                else if (difficulty === 'hard')
+                    playCpuMoveSmart();
             }
             evaluateBoard();
         }
@@ -40,6 +44,46 @@ let gameBoard = (() => {
                 emptyCells.push(i);
         }
 
+        let r = Math.floor(Math.random() * emptyCells.length);
+ 
+        playMove(2, emptyCells[r]);
+    }
+
+    function playCpuMoveSmart() {
+        // only play empty cells, so find them, pick a random one, and play
+        let emptyCells = [];
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === 0)
+                emptyCells.push(i);
+        }
+
+        // go thru and play cells, if win condition is found, play that
+        // go thru again, if player win condition is found, block that
+        // else play random
+        for (const idx of emptyCells) {
+            board[idx] = 2;
+            if (checkBoardForGameOver() === "cpu") {
+                board[idx] = 0;
+                playMove(2, idx);
+                console.log(`smart cpu: win found, playing ${idx}`);
+                return;
+            }
+            board[idx] = 0;
+        }
+
+        for (const idx of emptyCells) {
+            board[idx] = 1;
+            if (checkBoardForGameOver() === "player") {
+                board[idx] = 0;
+                playMove(2, idx);
+                console.log(`smart cpu: player win found, playing ${idx} to block`);
+                done = true;
+                return;
+            }
+            board[idx] = 0;
+        }
+
+        console.log('smart cpu: none found, playing random');
         let r = Math.floor(Math.random() * emptyCells.length);
  
         playMove(2, emptyCells[r]);
@@ -82,10 +126,11 @@ let gameBoard = (() => {
         return result;
     }
 
-    function evaluateBoard() {
+    // returns "" for not gameover, or the winner: "player" "cpu" "draw"
+    function checkBoardForGameOver() {
         const boardW = 3;
 
-        let filledCells = 0;
+        let filledCells = 0; // counter for played cells, once all cells are played and there is no win state, it's a draw
 
         for (let i = 0; i < board.length; i++) {
             if (board[i] === 0)
@@ -96,23 +141,31 @@ let gameBoard = (() => {
                 || testDir(i, 1, 1) >= boardW
                 || testDir(i, -1, 1) >= boardW
                 ) {
-                    let s;
                     if (board[i] === 1)
-                        s = 'win';
+                        return "player"
                     else if (board[i] === 2)
-                        s = 'loss';
-                    document.querySelector('#status').textContent = `That's a ${s}`;
-                    console.log(`That's a ${s}`);
-                    gameOver = true;
+                        return "cpu"
                 }
 
                 // check for "draw"
                 filledCells++;
                 if (filledCells >= 9 && !gameOver) {
-                    document.querySelector('#status').textContent = `That's a draw`;
-                    console.log(`That's a draw`);
-                    gameOver = true;
+                    return "draw";
                 }
+        }
+    }
+
+    function evaluateBoard() {
+        let winner = checkBoardForGameOver();
+        if (winner === "player") {
+            document.querySelector('#status').textContent = `That's a win`;
+            gameOver = true;
+        } else if (winner === "cpu") {
+            document.querySelector('#status').textContent = `That's a loss`;
+            gameOver = true;
+        } else if (winner === "draw") {
+            document.querySelector('#status').textContent = `That's a draw`;
+            gameOver = true;
         }
     }
 
@@ -182,3 +235,6 @@ document.querySelector('#resetButton').addEventListener('click', e => {
     gameBoard.reset();
     displayController.update();
 });
+
+// difficulty selector
+document.querySelector('#difficuly-select').addEventListener
